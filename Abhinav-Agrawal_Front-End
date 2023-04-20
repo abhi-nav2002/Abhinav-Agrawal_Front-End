@@ -1,0 +1,113 @@
+Q1.Explain what the simple List component does. 
+
+Ans: Actually it has a simple role to run the html element `<li>` by accepting some input some , the text, index and click listener from parent component, if user will tap on the element it triggers the click event on the parent component and parent component can execute there handler, in our case we are just update the current index. As soon as user click on specific item, we are just changing the background color of the element.
+
+Q2.What problems / warnings are there with code?
+
+Ans: As soon as i started to put the code and running it, it started throwing some error, below are the errors:
+1. We are using the third party package for validating the prototypes. 
+2. We are using the ProtoType.array, it throws some error for direct use of Invariant Violation, as i debug and found we are using the object of types, instead i use arrayOf type to resolve the issue.
+3. As i found we are using shapeOf method, instead we have to use the shape type to create the object prototypes.
+4. There is no data was provided , so create some dummy data to render some output.
+5. useState method is not properly used, it return the value and then the fn handler so swap the const and error gone.
+6. In useEffect method wrong dependency (Item) passed , we have to provide the right function to update the selected index.
+7. map function uses directly , so if we don't have array as expected so it can be cause some error, so use the proper validation.
+8. If no data passed for rendering , i have implement a logic to show some message.
+9. When the list is created on the view, there is warning throw on console for uniqueness, so use the key attribute.
+10. onClickhandler default executing on component rendering, so fixed it. 
+11. isSelected , accept the boolean, and there is index passing, so fix with boolean.
+12. Small UI improve with small style changes.
+
+Q3.Please fix, optimize, and/or modify the component as much as you think is necessary.
+
+Ans: I have done some small optimisation on the code side, as i am in learning face so i am very confident for more reusability and optimize code deliverable while my development.
+
+Here is the updated code:
+
+import React, { useState, useEffect, memo } from "react";
+import PropTypes from "prop-types";
+
+// Single List Item
+const WrappedSingleListItem = ({ index, isSelected, onClickHandler, text }) => {
+  return (
+    <li
+      style={{  
+        listStyle: "none", 
+        backgroundColor: isSelected ? "green" : "red", 
+        marginTop: "10px", 
+        padding: "10px",
+        fontWeight: '700',
+      }}
+      onClick={() => onClickHandler(index)}
+    >
+      {text}
+    </li>
+  );
+};
+
+WrappedSingleListItem.propTypes = {
+  index: PropTypes.number,
+  isSelected: PropTypes.bool,
+  onClickHandler: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+};
+
+const SingleListItem = memo(WrappedSingleListItem);
+
+// List Component
+const WrappedListComponent = ({ items }) => {
+  const [selectedIndex, setSelectedIndex] = useState();
+
+  useEffect(() => {
+    setSelectedIndex(null);
+  }, [setSelectedIndex]);
+
+  return typeof items?.length < 1 ? (
+    <h2> Invalid Data Found.</h2>
+  ) : (
+    <ul style={{ textAlign: "left" }}>
+      {items?.map((item, index) => (
+        <SingleListItem
+          key={index}
+          onClickHandler={ setSelectedIndex }
+          text={item.text}
+          index={index}
+          isSelected={selectedIndex === index}
+        />
+      ))}
+    </ul>
+  );
+};
+
+WrappedListComponent.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+    })
+  ),
+};
+
+const data = [
+  {
+    text: 'Student 1',
+  },
+  {
+    text: 'Student 2',
+  },
+  {
+    text: 'Student 3',
+  },
+  {
+    text: 'Student 4',
+  }
+];
+
+WrappedListComponent.defaultProps = {
+  items: data,
+};
+
+
+
+const App = memo(WrappedListComponent);
+
+export default App;
